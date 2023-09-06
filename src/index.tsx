@@ -1,14 +1,22 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './index.css';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Outlet } from "react-router-dom";
+import { DimensionsProvider } from "./domain/dimensions";
+import { Provider as RoutingProvider } from "./domain/routing";
+import "./index.css";
+import compose from "./util/compose";
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
+
+const Multiprovider = compose(DimensionsProvider, RoutingProvider);
+
 root.render(
   <React.StrictMode>
-    <App />
+    <Multiprovider>
+      <Outlet />
+    </Multiprovider>
   </React.StrictMode>
 );
 
