@@ -12,8 +12,7 @@ import useGlobalPointerUp from "./domain/pointerup"
 // graph generation stuff...
 let initid = BigInt(1)
 const next64bitid = () => initid++
-const makeNodes = (amount: number) =>
-  new Array(amount).fill(next64bitid).map(v => v()) as bigint[]
+const makeNodes = (amount: number) => new Array(amount).fill(next64bitid).map(v => v()) as bigint[]
 
 const defaultGraphConfig = {
   stopThreshold: 10,
@@ -24,28 +23,12 @@ const defaultGraphConfig = {
   mergeMin: 1,
   sourcesAmount: 2,
 }
-const generateGraph = (
-  cfg = defaultGraphConfig as Partial<typeof defaultGraphConfig>
-) => {
-  const {
-    mergeMax,
-    mergeMin,
-    probabilityThreshold,
-    sourcesAmount,
-    splitMax,
-    splitMin,
-    stopThreshold,
-  } = { ...defaultGraphConfig, ...cfg }
+const generateGraph = (cfg = defaultGraphConfig as Partial<typeof defaultGraphConfig>) => {
+  const { mergeMax, mergeMin, probabilityThreshold, sourcesAmount, splitMax, splitMin, stopThreshold } = { ...defaultGraphConfig, ...cfg }
   function recursive(init = [] as bigint[], nodes = 0): bigint[] {
-    const { merge = [], split = [] } = groupBy(
-      () => (Math.random() >= probabilityThreshold ? "split" : "merge"),
-      init
-    )
+    const { merge = [], split = [] } = groupBy(() => (Math.random() >= probabilityThreshold ? "split" : "merge"), init)
     const groupsMergeMax = Math.floor(merge.length / (mergeMin || 1))
-    const groupsMergeMin = Math.ceil(
-      merge.length /
-        (mergeMax < (mergeMin || 1) ? (mergeMin || 1) + 1 : mergeMax)
-    )
+    const groupsMergeMin = Math.ceil(merge.length / (mergeMax < (mergeMin || 1) ? (mergeMin || 1) + 1 : mergeMax))
     const mergeGroupsCount = random(groupsMergeMin, groupsMergeMax)
     const mergeGroups = merge.reduce(
       (acc, v, i) => ({
@@ -55,10 +38,7 @@ const generateGraph = (
       {} as Dictionary<bigint[]>
     )
     const mergeLayer = makeNodes(mergeGroupsCount)
-    const mergeEdges = mergeLayer.reduce(
-      (acc, v, i) => mergeGroups[i].reduce((acc2, v2) => [...acc2, v2, v], acc),
-      [] as bigint[]
-    )
+    const mergeEdges = mergeLayer.reduce((acc, v, i) => mergeGroups[i].reduce((acc2, v2) => [...acc2, v2, v], acc), [] as bigint[])
 
     const splitLayerSize = random(splitMin, splitMax) * split.length
     const splitLayer = makeNodes(splitLayerSize)
@@ -69,19 +49,13 @@ const generateGraph = (
       }),
       {} as Dictionary<bigint[]>
     )
-    const splitEdges = split.reduce(
-      (acc, v, i) => splitGroups[i].reduce((acc2, v2) => [...acc2, v, v2], acc),
-      [] as bigint[]
-    )
+    const splitEdges = split.reduce((acc, v, i) => splitGroups[i].reduce((acc2, v2) => [...acc2, v, v2], acc), [] as bigint[])
 
     const resultNodesAmount = nodes + mergeLayer.length + splitLayer.length
     const resultEdges = [...init, ...mergeEdges, ...splitEdges]
     return resultNodesAmount >= stopThreshold
       ? resultEdges
-      : [
-          ...resultEdges,
-          ...recursive([...mergeLayer, ...splitLayer], resultNodesAmount),
-        ]
+      : [...resultEdges, ...recursive([...mergeLayer, ...splitLayer], resultNodesAmount)]
   }
 
   return recursive(makeNodes(sourcesAmount))
@@ -103,10 +77,7 @@ const testData = nodes.map(id =>
     ] as const
     Object.defineProperty(box, $id, { value: id })
     return box
-  })(
-    Math.max(Math.random() * (canvasSize[0] - maxw), 0),
-    Math.max(Math.random() * (canvasSize[1] - maxh), 0)
-  )
+  })(Math.max(Math.random() * (canvasSize[0] - maxw), 0), Math.max(Math.random() * (canvasSize[1] - maxh), 0))
 )
 
 const clamp =
@@ -130,19 +101,10 @@ export default function Test() {
   const [canvasOffsetY, setCanvasOffsetY] = useState(0)
 
   const [actionsMenuActive, setActionsMenuActive] = useState(false)
-  const [actionsMenuPosition, setActionsMenuPosition] = useState([0, 0] as [
-    number,
-    number
-  ])
+  const [actionsMenuPosition, setActionsMenuPosition] = useState([0, 0] as [number, number])
 
   const clamp2vp = useMemo(
-    () =>
-      clamp([
-        -canvasOffsetX - w,
-        -canvasOffsetY - h,
-        2 * w - canvasOffsetX,
-        2 * h - canvasOffsetY,
-      ]),
+    () => clamp([-canvasOffsetX - w, -canvasOffsetY - h, 2 * w - canvasOffsetX, 2 * h - canvasOffsetY]),
     [w, h, canvasOffsetX, canvasOffsetY]
   )
   const data2render = useMemo(() => clamp2vp(testData), [clamp2vp])
@@ -150,9 +112,7 @@ export default function Test() {
     (acc, v) => ({ ...acc, [`${v[$id as any]}`]: v }),
     {} as Dictionary<readonly [number, number, number, number]>
   )
-  const edges2render = chunk(edges, 2).filter(
-    ([a, b]) => `${a}` in sizesMap || `${b}` in sizesMap
-  )
+  const edges2render = chunk(edges, 2).filter(([a, b]) => `${a}` in sizesMap || `${b}` in sizesMap)
 
   const onPointerMove = useCallback((e: PointerEvent) => {
     setDraggingOffsetX(add(e.movementX))
@@ -166,10 +126,8 @@ export default function Test() {
 
   useEffect(() => {
     if (!dragging) {
-      if (draggingOffsetX !== 0)
-        setCanvasOffsetX(v => Math.min(0, draggingOffsetX + v))
-      if (draggingOffsetY !== 0)
-        setCanvasOffsetY(v => Math.min(0, draggingOffsetY + v))
+      if (draggingOffsetX !== 0) setCanvasOffsetX(v => Math.min(0, draggingOffsetX + v))
+      if (draggingOffsetY !== 0) setCanvasOffsetY(v => Math.min(0, draggingOffsetY + v))
       setDraggingOffsetX(0)
       setDraggingOffsetY(0)
     }
@@ -195,12 +153,8 @@ export default function Test() {
           className='absolute inset-0 block translate-x-[--x] translate-y-[--y] select-none overflow-visible'
           style={
             {
-              "--x": `${
-                w / 2 + Math.min(0, canvasOffsetX + draggingOffsetX)
-              }px`,
-              "--y": `${
-                h / 2 + Math.min(0, canvasOffsetY + draggingOffsetY)
-              }px`,
+              "--x": `${w / 2 + Math.min(0, canvasOffsetX + draggingOffsetX)}px`,
+              "--y": `${h / 2 + Math.min(0, canvasOffsetY + draggingOffsetY)}px`,
             } as any
           }>
           {!isNil(w) && !isNil(h)

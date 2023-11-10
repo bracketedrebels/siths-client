@@ -1,16 +1,16 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { Outlet } from "react-router-dom";
-import { DimensionsProvider } from "./domain/dimensions";
-import { Provider as RoutingProvider } from "./domain/routing";
-import "./index.css";
-import compose from "./util/compose";
+/** @format */
 
-const root = ReactDOM.createRoot(
-  document.getElementById("root") as HTMLElement
-);
+import React from "react"
+import ReactDOM from "react-dom/client"
+import { Outlet } from "react-router-dom"
+import { DimensionsProvider } from "./domain/dimensions"
+import { Provider as RoutingProvider } from "./domain/routing"
+import "./index.css"
+import compose from "./util/compose"
 
-const Multiprovider = compose(DimensionsProvider, RoutingProvider);
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement)
+
+const Multiprovider = compose(DimensionsProvider, RoutingProvider)
 
 root.render(
   <React.StrictMode>
@@ -18,7 +18,7 @@ root.render(
       <Outlet />
     </Multiprovider>
   </React.StrictMode>
-);
+)
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

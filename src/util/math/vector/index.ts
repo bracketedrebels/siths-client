@@ -1,7 +1,7 @@
 /** @format */
 
-import { add, subtract } from "lodash"
-import { gt, gte, lt, lte, max, min, multiply, zipWith } from "ramda"
+import { add, eq, subtract } from "lodash"
+import { and, gt, gte, lt, lte, max, min, multiply, zipWith } from "ramda"
 import { N } from "ts-toolbelt"
 
 export const pointInBox = <V extends readonly number[]>(point: V, [a, b]: [V, V], strict = false) => {
@@ -28,6 +28,8 @@ export const mul = <V extends readonly number[]>(a: V, f: number) => a.map(multi
 
 export const sub = <V extends readonly number[]>(...v: [V, ...V[]]) => fold(subtract, v)
 
+export const equal = <V extends readonly number[]>(a: V, b: V) => zipWith(eq, a, b).reduce(and, true)
+
 export const vector = <Len extends number>(len: Len, fill = 0) => new Array(len).fill(fill) as unknown as Vector<Len>
 
 export const scale = <V extends readonly number[]>([a, b]: [V, V], f: number) =>
@@ -35,5 +37,10 @@ export const scale = <V extends readonly number[]>([a, b]: [V, V], f: number) =>
 
 export const clamp = <V extends readonly number[]>([mn, mx]: readonly [V, V], v: V) => fold(min, [fold(max, [v, mn]), mx])
 
-export type PlainVector<Len extends number> = N.Greater<Len, 0> extends 1 ? readonly [number, ...PlainVector<N.Sub<Len, 1>>] : readonly []
+export const center = <V extends readonly number[]>([[l, t], [r, b]]: readonly [V, V]) => [l + (r - l) / 2, t + (b - t) / 2] as unknown as V
+
+export const translate = <V extends readonly number[]>(v: V, to: V, from?: V) => sum(from ? sub(to, from) : to, v)
+
+type PlainVector<Len extends number> = N.Greater<Len, 0> extends 1 ? readonly [number, ...PlainVector<N.Sub<Len, 1>>] : readonly []
 export type Vector<Len extends number> = PlainVector<Len> & { length: Len } & readonly number[]
+export type Section<Len extends number> = readonly [Vector<Len>, Vector<Len>]
